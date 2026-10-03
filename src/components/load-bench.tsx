@@ -194,7 +194,7 @@ function BenchForScript({
       {/* ---------------------------------------------------------------- */}
       {/* Input: the script and the transcript                             */}
       {/* ---------------------------------------------------------------- */}
-      <div className="grid content-start gap-4">
+      <div className="grid min-w-0 content-start gap-4">
         <Panel>
           <PanelHead legend="Step 1" title="Choose the probe" />
           <div className="p-3">
@@ -342,7 +342,7 @@ function BenchForScript({
       {/* ---------------------------------------------------------------- */}
       {/* Output: the engine result                                        */}
       {/* ---------------------------------------------------------------- */}
-      <div className="grid content-start gap-4">
+      <div className="grid min-w-0 content-start gap-4">
         {!result ? (
           <Panel>
             <PanelHead legend="Result" title="No grade yet" />

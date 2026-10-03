@@ -286,7 +286,7 @@ export function AgentConsole({ scripts }: { scripts: ScriptShape[] }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-      <div className="grid content-start gap-4">
+      <div className="grid min-w-0 content-start gap-4">
         <Panel>
           <PanelHead
             legend="JSON-RPC 2.0"
@@ -398,7 +398,7 @@ export function AgentConsole({ scripts }: { scripts: ScriptShape[] }) {
         </Panel>
       </div>
 
-      <div className="grid content-start gap-4">
+      <div className="grid min-w-0 content-start gap-4">
         <Panel>
           <PanelHead
             legend="Wire"
@@ -410,7 +410,7 @@ export function AgentConsole({ scripts }: { scripts: ScriptShape[] }) {
 
             <div>
               <Legend>Request</Legend>
-              <pre className="mt-1 max-h-52 overflow-auto border border-rule bg-ink px-3 py-2 text-[11px] leading-relaxed whitespace-pre-wrap text-emerald-200">
+              <pre className="mt-1 max-h-52 min-w-0 overflow-auto border border-rule bg-ink px-3 py-2 text-[11px] leading-relaxed whitespace-pre-wrap text-emerald-200">
                 {request || "Pick a preloaded call, or run initialize to see the handshake."}
               </pre>
             </div>

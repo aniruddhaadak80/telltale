@@ -69,15 +69,21 @@ export function SiteHeader() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
+          {/*
+            The repository link is present at every width, not only in the desktop
+            bar. Below the `sm` breakpoint the labelled button collapses to an
+            icon, so the source is one tap away without opening the menu, and the
+            same link is repeated inside the menu sheet.
+          */}
           <a
             href={site.repoUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden items-center gap-1.5 border border-rule bg-sheet-panel px-2.5 py-1.5 text-xs font-semibold transition-colors hover:border-ink hover:bg-sheet-sunk sm:inline-flex"
+            className="inline-flex items-center gap-1.5 border border-rule bg-sheet-panel px-2.5 py-1.5 text-xs font-semibold transition-colors hover:border-ink hover:bg-sheet-sunk"
             aria-label={`Star ${site.name} on GitHub — opens in a new tab`}
           >
             <GitHubMark className="h-3.5 w-3.5" />
-            Star on GitHub
+            <span className="hidden sm:inline">Star on GitHub</span>
           </a>
 
           <button

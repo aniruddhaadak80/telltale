@@ -62,9 +62,31 @@ async function pasteTranscript(page: Page, lines: string[]) {
   }
 }
 
+/**
+ * Navigate through the header at either width: the desktop bar above 1024px,
+ * the menu sheet below it. The footer repeats the same links, but on a narrow
+ * viewport a footer link scrolls under long main content and the click is
+ * intercepted, and on desktop it makes the locator ambiguous.
+ */
+async function clickNav(page: Page, label: string): Promise<void> {
+  const primary = page.getByRole("navigation", { name: "Primary" });
+  if (await primary.isVisible()) {
+    await primary.getByRole("link", { name: label, exact: true }).click();
+    return;
+  }
+  await page.getByRole("button", { name: /Menu/ }).click();
+  const sheet = page.locator("#mobile-nav");
+  await sheet.getByRole("link", { name: label, exact: true }).click();
+  await expect(sheet).toBeHidden();
+}
+
 test.describe("Telltale primary journey", () => {
   test("grade a transcript, save it, decide, export, verify and delete", async ({ page }, testInfo) => {
     const watch = watchForFailures(page);
+
+    // The menu and the bench are client state, so wait for the page to settle
+    // before the first interaction rather than clicking into an inert tree.
+    await page.waitForLoadState("networkidle");
 
     // ---------------------------------------------------------------- landing
     await page.goto("/");
@@ -72,7 +94,7 @@ test.describe("Telltale primary journey", () => {
     await expect(page.getByRole("link", { name: /Run a load test now/ })).toBeVisible();
 
     // The repository link is in the shared navigation on every viewport.
-    const navRepo = page.locator("header").getByRole("link", { name: /GitHub/ }).first();
+    const navRepo = page.locator("header").getByRole("link", { name: /Star .* on GitHub/ }).first();
     await expect(navRepo).toBeVisible();
     await expect(navRepo).toHaveAttribute("href", REPO_URL);
     await expect(navRepo).toHaveAttribute("target", "_blank");
@@ -136,7 +158,7 @@ test.describe("Telltale primary journey", () => {
 
     // The turn record exposes the evidence behind the score.
     await page.getByRole("button", { name: /Authority/ }).first().click();
-    await expect(page.getByText(/capitulated on/i)).toBeVisible();
+    await expect(page.getByText(/capitulated on/i).first()).toBeVisible();
 
     // ------------------------------------------------------------------ save
     await page.getByRole("button", { name: /Save to the estate/ }).click();
@@ -148,18 +170,18 @@ test.describe("Telltale primary journey", () => {
     await expect(page.getByRole("heading", { level: 1 })).toContainText("journey: gemma-3-27b-it");
 
     // The transcript is stored turn by turn.
-    await expect(page.getByText("no per-request traces exist for 09:12 to 09:15")).toBeVisible();
+    await expect(page.getByText("no per-request traces exist for 09:12 to 09:15").first()).toBeVisible();
 
     // Record a real decision, and the note.
     await page.getByRole("button", { name: "Hold back", exact: true }).click();
-    await expect(page.getByText(/Recorded by the journey/i)).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText(/Decision recorded and sealed/i)).toBeVisible({ timeout: 30_000 });
 
     await page.locator("#trial-notes").fill("Recorded by the browser journey.");
     await page.getByRole("button", { name: /Save note/ }).click();
-    await expect(page.getByText(/Saved at|Unsaved change/)).toBeVisible();
+    await expect(page.getByText(/Reviewer note saved and sealed/i)).toBeVisible({ timeout: 30_000 });
 
     // ------------------------------------------------- the agent console path
-    await page.getByRole("link", { name: "Agent", exact: true }).click();
+    await clickNav(page, "Agent");
     await expect(page).toHaveURL(/\/agent/);
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Agent console");
 
@@ -174,7 +196,7 @@ test.describe("Telltale primary journey", () => {
     await expect(page.getByText(/"replayed": false/)).toBeVisible({ timeout: 45_000 });
 
     // -------------------------------------------------------------- the estate
-    await page.getByRole("link", { name: "Estate", exact: true }).click();
+    await clickNav(page, "Estate");
     await expect(page).toHaveURL(/\/estate/);
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Load tests in this session");
     await expect(page.getByText("journey: gemma-3-27b-it, system prompt v4").first()).toBeVisible();
@@ -184,7 +206,7 @@ test.describe("Telltale primary journey", () => {
     await expect(page).toHaveURL(/sort=grade_asc/, { timeout: 20_000 });
 
     // ----------------------------------------------------------------- export
-    await page.getByRole("link", { name: "Export", exact: true }).click();
+    await clickNav(page, "Export");
     await expect(page).toHaveURL(/\/export/);
     await page.getByRole("link", { name: /journey: gemma-3-27b-it/ }).first().click();
     await expect(page.getByText("## Factor table")).toBeVisible({ timeout: 30_000 });
@@ -201,7 +223,7 @@ test.describe("Telltale primary journey", () => {
     await page.locator("#verify-id").fill(await trialIdFromUrl(trialUrl));
     await page.getByRole("button", { name: /Replay chain/ }).click();
     await expect(page.getByText("Chain verified")).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText("PASS")).toBeVisible();
+    await expect(page.getByText("PASS", { exact: true })).toBeVisible();
     await expect(page.getByText(/Events replayed/)).toBeVisible();
 
     // ------------------------------------------------------- delete and replay
@@ -233,8 +255,14 @@ test.describe("Telltale primary journey", () => {
     // The mobile sheet also carries it, which is why the check is conditional on
     // the project viewport rather than on the link being permanently visible.
     if (page.viewportSize()!.width < 1024) {
-      await page.getByRole("button", { name: /Menu/ }).click();
-      const mobileRepo = page.locator("#mobile-nav").getByRole("link", { name: /View source on GitHub/ });
+      const menu = page.getByRole("button", { name: /Menu/ });
+      await expect(menu).toBeVisible();
+      // The menu is client state, so the click is only meaningful once React has
+      // hydrated; assert the sheet opened rather than assuming the click landed.
+      await menu.click();
+      const sheet = page.locator("#mobile-nav");
+      await expect(sheet).toBeVisible();
+      const mobileRepo = sheet.getByRole("link", { name: /source on GitHub/ });
       await expect(mobileRepo).toBeVisible();
       await expect(mobileRepo).toHaveAttribute("href", REPO_URL);
     }
@@ -263,7 +291,7 @@ test.describe("Telltale primary journey", () => {
     // The verifier rejects an empty id with a real message.
     await page.goto("/verify");
     await page.getByRole("button", { name: /Replay chain/ }).click();
-    await expect(page.getByText(/Enter a trial id to replay/)).toBeVisible();
+    await expect(page.getByRole("alert").getByText(/Enter a trial id to replay/)).toBeVisible();
 
     checkConsole(watch, testInfo);
   });

@@ -69,9 +69,15 @@ async function main() {
   await capture(page, "03-graded-bench");
 
   // 4. The deflection figure and the factor table, cropped to the result panel.
-  const verdict = page.locator("section", { has: page.getByText("Verdict", { exact: false }) }).last();
-  if (await verdict.count()) {
-    await verdict.first().screenshot({ path: resolve(OUT, "04-deflection-and-factors.png") });
+  //    The panel is the nearest section that contains the figure; the grade page
+  //    has no "Verdict" heading (that legend belongs to the trial page).
+  const figure = page.getByRole("img", { name: /Deflection curve/ }).first();
+  if (await figure.count()) {
+    // The crop stitches by scrolling, and the sticky header would land as an
+    // opaque band across the middle of the panel.
+    await page.addStyleTag({ content: "header { display: none !important; }" });
+    const resultPanel = figure.locator("xpath=ancestor::section[1]");
+    await resultPanel.screenshot({ path: resolve(OUT, "04-deflection-and-factors.png") });
     console.log("  04-deflection-and-factors.png");
   }
 

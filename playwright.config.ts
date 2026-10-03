@@ -36,7 +36,7 @@ export default defineConfig({
     process.env.SKIP_WEBSERVER === "1"
       ? undefined
       : {
-          command: `cross-env-less node node_modules/next/dist/bin/next start --port ${PORT}`,
+          command: `node node_modules/next/dist/bin/next start --port ${PORT}`,
           url: baseURL,
           reuseExistingServer: true,
           timeout: 120_000,

@@ -43,6 +43,7 @@ export function TrialDetail({ initial }: { initial: Trial }) {
   const [notes, setNotes] = useState(initial.notes);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleted, setDeleted] = useState(false);
+  const [saved, setSaved] = useState<string | null>(null);
 
   /**
    * Adopt a changed prop during render rather than in an effect.
@@ -53,11 +54,18 @@ export function TrialDetail({ initial }: { initial: Trial }) {
    * briefly shows the old grade against the new seal.
    */
   const [adopted, setAdopted] = useState(`${initial.id}:${initial.updatedAt}`);
+  const [adoptedNotes, setAdoptedNotes] = useState(initial.notes);
   const incoming = `${initial.id}:${initial.updatedAt}`;
   if (incoming !== adopted) {
+    // A refresh after a mutation must not discard unsaved work: adopt the new
+    // record, but keep the local textarea when it has drifted from the last
+    // adopted copy (the reviewer is mid-edit, or the fill landed before the
+    // refresh arrived).
+    const unsaved = notes !== adoptedNotes;
     setAdopted(incoming);
+    setAdoptedNotes(initial.notes);
     setTrial(initial);
-    setNotes(initial.notes);
+    if (!unsaved) setNotes(initial.notes);
     setConfirmingDelete(false);
   }
 
@@ -65,6 +73,7 @@ export function TrialDetail({ initial }: { initial: Trial }) {
     async (body: Record<string, unknown>, kind: typeof busy) => {
       setBusy(kind);
       setError(null);
+      setSaved(null);
       try {
         const response = await fetch(`/api/trials/${trial.id}`, {
           method: "PATCH",
@@ -78,6 +87,8 @@ export function TrialDetail({ initial }: { initial: Trial }) {
         }
         setTrial(payload.data);
         setNotes(payload.data.notes);
+        if (kind === "decision") setSaved("Decision recorded and sealed into the audit chain.");
+        if (kind === "notes") setSaved("Reviewer note saved and sealed into the audit chain.");
         router.refresh();
         return true;
       } catch (caught) {
@@ -140,7 +151,7 @@ export function TrialDetail({ initial }: { initial: Trial }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-      <div className="grid content-start gap-4">
+      <div className="grid min-w-0 content-start gap-4">
         {authored ? (
           <StatusNote tone="warn">
             <strong className="font-semibold">Authored example, not a model output.</strong> This record
@@ -242,7 +253,7 @@ export function TrialDetail({ initial }: { initial: Trial }) {
         </Panel>
       </div>
 
-      <div className="grid content-start gap-4">
+      <div className="grid min-w-0 content-start gap-4">
         <Panel>
           <PanelHead legend="Decision" title="What happens to this configuration" />
           <div className="grid gap-3 p-3">
@@ -275,7 +286,10 @@ export function TrialDetail({ initial }: { initial: Trial }) {
               <textarea
                 id="trial-notes"
                 value={notes}
-                onChange={(event) => setNotes(event.target.value)}
+                onChange={(event) => {
+                  setNotes(event.target.value);
+                  setSaved(null);
+                }}
                 rows={4}
                 maxLength={2000}
                 placeholder="What did you decide, and what would change it?"
@@ -294,6 +308,7 @@ export function TrialDetail({ initial }: { initial: Trial }) {
             </div>
 
             {error ? <StatusNote tone="error">{error}</StatusNote> : null}
+            {saved ? <StatusNote tone="success">{saved}</StatusNote> : null}
           </div>
         </Panel>
 
@@ -344,7 +359,7 @@ export function TrialDetail({ initial }: { initial: Trial }) {
             ].map((row) => (
               <div key={row.label} className="grid gap-0.5">
                 <dt className="legend">{row.label}</dt>
-                <dd className="numeric break-all text-ink-soft">{row.value}</dd>
+                <dd className="numeric min-w-0 break-all text-ink-soft">{row.value}</dd>
               </div>
             ))}
           </dl>

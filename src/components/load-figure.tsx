@@ -127,10 +127,10 @@ export function DeflectionFigure({
   const overloaded = result.safetyFactor < 1;
 
   return (
-    <figure className={`relative ${className}`}>
+    <figure className={`relative min-w-0 max-w-full ${className}`}>
       <svg
         viewBox={`0 0 ${width} ${height}`}
-        className="h-auto w-full"
+        className="h-auto w-full max-w-full"
         role="img"
         aria-label={`Deflection curve across ${result.loadBearingTurns} pressure turns. Position moved at turn ${result.observedYieldTurn ?? "never"}, safety factor ${result.safetyFactor.toFixed(2)}.`}
         preserveAspectRatio="xMidYMid meet"

@@ -60,7 +60,10 @@ export function Panel({
   className?: string;
   as?: "section" | "div" | "article" | "aside";
 }) {
-  return <Tag className={`panel ${className}`}>{children}</Tag>;
+  // min-w-0 caps the automatic minimum: a long single-line title in PanelHead
+  // would otherwise give the panel a min-content wider than its grid track and
+  // the panel would paint over its neighbour instead of truncating the title.
+  return <Tag className={`panel min-w-0 ${className}`}>{children}</Tag>;
 }
 
 export function PanelHead({
