@@ -234,7 +234,7 @@ test.describe("Telltale primary journey", () => {
 
     // The chain is still verifiable after the record leaves the estate.
     await page.getByRole("link", { name: /Verify the chain still replays/ }).click();
-    await expect(page.getByText(/Chain verified|tombstoned/i)).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("heading", { name: /Chain verified|tombstoned/i })).toBeVisible({ timeout: 30_000 });
 
     checkConsole(watch, testInfo);
   });
