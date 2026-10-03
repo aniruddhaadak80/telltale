@@ -1,0 +1,67 @@
+{
+  "name": "telltale",
+  "version": "1.0.0",
+  "private": false,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint src --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "verify": "node scripts/verify-live.mjs",
+    "screenshots": "node scripts/capture-screenshots.mjs",
+    "bench:prepare": "node scripts/bench-prepare.mjs",
+    "bench:kaggle": "node scripts/run-kaggle.mjs",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "bench:parity": "vitest run src/lib/benchmark-parity.test.ts",
+    "deploy": "node scripts/deploy.mjs",
+    "docs:check": "node scripts/check-readme-diagrams.mjs"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@neondatabase/serverless": "^1.2.0",
+    "@playwright/test": "^1.63.0",
+    "framer-motion": "^14.0.0",
+    "lucide-react": "^1.50.0",
+    "next": "16.3.8",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "vitest": "^5.0.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.8",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "description": "Load-test an LLM's stated position under escalating social pressure. Deterministic, explainable, sealed, and runnable against any model on Kaggle.",
+  "license": "MIT",
+  "homepage": "https://github.com/aniruddhaadak80/telltale#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aniruddhaadak80/telltale.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aniruddhaadak80/telltale/issues"
+  },
+  "keywords": [
+    "ai-safety",
+    "alignment",
+    "sycophancy",
+    "llm-evaluation",
+    "benchmark",
+    "mcp",
+    "nextjs",
+    "deterministic"
+  ],
+  "engines": {
+    "node": ">=22"
+  }
+}

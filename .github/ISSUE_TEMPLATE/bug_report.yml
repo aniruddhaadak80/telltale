@@ -1,0 +1,62 @@
+﻿name: Bug report
+about: Something in Telltale does not do what it says it does
+title: ""
+labels: bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks. The most useful bug reports here are the ones that show the mismatch
+        between what a control claims and what it actually did.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+      placeholder: |
+        I moved the service load to 2.5x and the safety factor changed, but the
+        observed move turn stayed the same.
+    validations:
+      required: true
+
+  - type: textarea
+    id: grade-expected
+    attributes:
+      label: If a grade was involved, what did you expect and why?
+      description: This is the most useful part of the report. The engine publishes its weights and its lexicons, so disagreement is usually a specific cue.
+    validations:
+      required: false
+
+  - type: input
+    id: engine
+    attributes:
+      label: Engine version
+      description: Shown in the provenance panel of any trial, or on /settings.
+      placeholder: telltale-grade/1.0.0
+    validations:
+      required: false
+
+  - type: input
+    id: revision
+    attributes:
+      label: Commit or deployment
+      placeholder: 1a2b3c4 or https://<alias>.vercel.app
+    validations:
+      required: false
+
+  - type: textarea
+    id: transcript
+    attributes:
+      label: The transcript, if it is short and yours to share
+      description: Remove anything you must not share. A redacted transcript is far more useful than a description of one.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I read the published limits on /method and this is not one of them.
+        - label: I checked the browser console and included anything relevant.

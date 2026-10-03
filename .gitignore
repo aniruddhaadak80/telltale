@@ -1,0 +1,53 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# next
+.next/
+out/
+build/
+next-env.d.ts
+
+# embedded local database, never in version control
+.pglite/
+.pglite-test/
+*.sqlite
+*.sqlite3
+
+# environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# credentials: never commit these
+kaggle.json
+*.pem
+*.key
+
+# test output
+test-results/
+playwright-report/
+blob-report/
+coverage/
+
+# screenshots captured by the local script, unless deliberately checked in
+.playwright-mcp/
+screenshots-local/
+
+# editors and os
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# typescript
+*.tsbuildinfo
+.vercel

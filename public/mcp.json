@@ -1,0 +1,101 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-06-18/server.schema.json",
+  "name": "telltale",
+  "version": "1.0.0",
+  "description": "Load-test an LLM's stated position under escalating social pressure. Eleven typed tools: read the published probe library, grade a transcript without saving, save a trial, move the applied load, record a decision, export a sealed certificate, and replay the SHA-384 audit chain.",
+  "status": "live",
+  "mcpServers": {
+    "telltale": {
+      "type": "http",
+      "url": "https://telltale-aniruddha-adaks-projects.vercel.app/api/mcp",
+      "transport": "streamable-http",
+      "protocolVersion": "2025-06-18",
+      "capabilities": {
+        "tools": {
+          "listChanged": false
+        }
+      },
+      "tools": [
+        {
+          "name": "list_scripts",
+          "title": "List pressure scripts",
+          "readOnly": true,
+          "description": "The published probe library: verified claims, declared boundaries and turn structure."
+        },
+        {
+          "name": "get_script",
+          "title": "Get one pressure script",
+          "readOnly": true,
+          "description": "Every scripted turn for one script, ready to send to a model under test."
+        },
+        {
+          "name": "grade_transcript",
+          "title": "Grade a transcript",
+          "readOnly": true,
+          "description": "Run the deterministic grader over a transcript without saving. Returns the versioned grade, itemised factors, evidence spans and a safety factor."
+        },
+        {
+          "name": "rank_trial",
+          "title": "Rank trials by grade",
+          "readOnly": true,
+          "description": "List the caller's trials with grade, band and safety factor, ranked."
+        },
+        {
+          "name": "get_trial",
+          "title": "Get one trial",
+          "readOnly": true,
+          "description": "One trial with its full transcript, engine result and audit seal."
+        },
+        {
+          "name": "create_trial",
+          "title": "Grade and save a trial",
+          "readOnly": false,
+          "idempotent": true,
+          "description": "Grade and save through the same service the interface uses. Idempotent on idempotencyKey."
+        },
+        {
+          "name": "record_decision",
+          "title": "Record a deployment decision",
+          "readOnly": false,
+          "description": "Set the deployment decision and append to the audit chain. Requires the current seal."
+        },
+        {
+          "name": "set_service_load",
+          "title": "Move the service load",
+          "readOnly": false,
+          "description": "Re-rate a trial at a different applied load without touching its transcript or reference."
+        },
+        {
+          "name": "delete_trial",
+          "title": "Tombstone a trial",
+          "readOnly": false,
+          "destructive": true,
+          "description": "Delete by writing a tombstone. Requires the current seal."
+        },
+        {
+          "name": "export_certificate",
+          "title": "Export a load-test certificate",
+          "readOnly": true,
+          "description": "The self-contained Markdown certificate: factor table, evidence attribution and the seal to verify against."
+        },
+        {
+          "name": "verify_integrity",
+          "title": "Replay the audit chain",
+          "readOnly": true,
+          "description": "Recompute a trial's SHA-384 seal chain from genesis and report the first broken link."
+        },
+        {
+          "name": "lineup_signals",
+          "title": "Read the live lineup",
+          "readOnly": true,
+          "description": "The live Kaggle model catalogue this benchmark can be run against, plus the live alignment literature feed, each labelled live or fallback."
+        }
+      ]
+    }
+  },
+  "notes": [
+    "This file points at the live production endpoint. It contains no credentials.",
+    "Reads and writes are scoped to the anonymous session cookie. An agent connected this way sees only the trials belonging to that session.",
+    "A deployment on a different alias should update the url field above; it is generated from the site configuration module."
+  ]
+}

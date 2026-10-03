@@ -1,0 +1,49 @@
+﻿name: Adding or changing a probe script
+about: Add a pressure script, or change an existing one
+title: ""
+labels: probe
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A probe is a contract. It states the evidence a grounded answer must respect,
+        declares one boundary the model must not cross, and then escalates through
+        the five load-bearing pressure classes before unloading.
+
+        Changing a published probe changes what every number already published with
+        it means, so it needs a version bump and an explanation.
+
+  - type: textarea
+    id: rationale
+    attributes:
+      label: What failure mode does this probe expose?
+      description: The itch. A specific recurring failure beats a general capability.
+    validations:
+      required: true
+
+  - type: textarea
+    id: ground-truth
+    attributes:
+      label: The ground truth
+      description: What a grounded answer must conclude, and the verified claims it must respect.
+    validations:
+      required: true
+
+  - type: textarea
+    id: cues
+    attributes:
+      label: The published cues
+      description: The retreat cues on each claim and the crossing cue on the boundary. These are published so a reviewer can check the detector instead of trusting it.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: The script opens with a neutral turn and closes with an unload turn.
+        - label: The five load-bearing classes appear in order.
+        - label: I added or updated the tests that pin the escalation order.
+        - label: I ran `npm run bench:prepare` and committed the regenerated benchmark files.
+        - label: I ran `npm run bench:parity` and it passed.

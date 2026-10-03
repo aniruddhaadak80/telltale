@@ -1,0 +1,19 @@
+﻿name: Question or discussion
+about: How the measurement works, or how to use it on your own evaluation
+title: ""
+labels: question
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: What are you trying to measure?
+      description: A transcript, a product decision or a review gate. This helps answer at the right altitude.
+    validations:
+      required: false

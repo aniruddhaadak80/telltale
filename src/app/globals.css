@@ -1,0 +1,345 @@
+@import "tailwindcss";
+
+/*
+ * Telltale — a structural load-test bench, drawn as an engineer's bench sheet.
+ *
+ * The ground is cold chalk rather than ink, because the last several builds in
+ * this workspace were dark instrument panels, parchment or patina. The signal
+ * colours are reserved: oxide for a member that yielded, teal for one that held,
+ * royal blue for anything measured, amber for caution, rose for a fabricated load.
+ */
+
+@theme {
+  /* Ground: cold chalk drafting sheet with a faint blue plot grid. */
+  --color-sheet: #f2f4f7;
+  --color-sheet-panel: #ffffff;
+  --color-sheet-sunk: #e7ebf1;
+
+  /* Rules and ink. */
+  --color-ink: #15181e;
+  --color-ink-soft: #454c59;
+  --color-ink-faint: #737c8c;
+  --color-rule: #c3cbd7;
+  --color-rule-soft: #dde3ec;
+
+  /* Signal colours, each used for exactly one meaning. */
+  --color-held: #0f766e;
+  --color-held-bright: #14b8a6;
+  --color-yield: #be123c;
+  --color-yield-bright: #f43f5e;
+  --color-measured: #1d4ed8;
+  --color-caution: #b45309;
+  --color-set: #7e22ce;
+  --color-agent: #047857;
+
+  /* Fixed engineering hues, for load classes. */
+  --color-load-1: #1d4ed8;
+  --color-load-2: #0f766e;
+  --color-load-3: #b45309;
+  --color-load-4: #be123c;
+  --color-load-5: #7e22ce;
+
+  --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Martian Mono", ui-monospace, "SFMono-Regular", monospace;
+  --font-body: "Archivo", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  background: var(--color-sheet);
+}
+
+body {
+  background: var(--color-sheet);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/*
+ * The plotting grid. Two frequencies so the eye can read both the fine ruling and
+ * the metre lines, exactly as on a real drawing sheet.
+ */
+.plot-grid {
+  background-image:
+    linear-gradient(to right, rgba(21, 24, 30, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(21, 24, 30, 0.055) 1px, transparent 1px),
+    linear-gradient(to right, rgba(21, 24, 30, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(21, 24, 30, 0.1) 1px, transparent 1px);
+  background-size:
+    16px 16px,
+    16px 16px,
+    128px 128px,
+    128px 128px;
+}
+
+.plot-grid-dark {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to right, rgba(255, 255, 255, 0.11) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.11) 1px, transparent 1px);
+  background-size:
+    16px 16px,
+    16px 16px,
+    128px 128px,
+    128px 128px;
+}
+
+/* Section hatch, for the unsupported-load zone under the deflection curve. */
+.hatch {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(190, 18, 60, 0.18) 0 2px,
+    transparent 2px 8px
+  );
+}
+
+.hatch-neutral {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(21, 24, 30, 0.09) 0 2px,
+    transparent 2px 8px
+  );
+}
+
+/* A single hairline, the way a drawing rules a panel. */
+.hairline {
+  border-color: var(--color-rule);
+}
+
+.panel {
+  background: var(--color-sheet-panel);
+  border: 1px solid var(--color-rule);
+}
+
+.panel-sunk {
+  background: var(--color-sheet-sunk);
+  border: 1px solid var(--color-rule);
+}
+
+/* Dimension line, the classic leader with arrow ticks at each end. */
+.dimension {
+  position: relative;
+  height: 1px;
+  background: var(--color-ink-faint);
+}
+
+.dimension::before,
+.dimension::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  width: 1px;
+  height: 9px;
+  background: var(--color-ink-faint);
+}
+
+.dimension::before {
+  left: 0;
+}
+
+.dimension::after {
+  right: 0;
+}
+
+/* Crosshair registration mark used in panel corners. */
+.registration {
+  position: relative;
+}
+
+.registration::before,
+.registration::after {
+  content: "";
+  position: absolute;
+  width: 7px;
+  height: 7px;
+}
+
+.registration::before {
+  top: -3px;
+  left: -3px;
+  border-top: 1px solid var(--color-rule);
+  border-left: 1px solid var(--color-rule);
+}
+
+.registration::after {
+  right: -3px;
+  bottom: -3px;
+  border-right: 1px solid var(--color-rule);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+/* Legend label, the small caps switch on a real instrument. */
+.legend {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+.numeric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Focus: visible, high contrast, never removed. */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-measured);
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+
+::selection {
+  background: rgba(29, 78, 216, 0.18);
+}
+
+/* The load dial's track and thumb, drawn as a machined slide rule. */
+.dial-track {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 28px;
+  background: linear-gradient(
+    to bottom,
+    var(--color-sheet-panel),
+    var(--color-sheet-sunk)
+  );
+  border: 1px solid var(--color-rule);
+  cursor: pointer;
+}
+
+.dial-track::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 34px;
+  margin-top: -4px;
+  background: var(--color-ink);
+  border: 1px solid var(--color-ink);
+  box-shadow: inset 0 0 0 2px var(--color-sheet-panel);
+  cursor: grab;
+}
+
+.dial-track::-webkit-slider-thumb:active {
+  cursor: grabbing;
+}
+
+.dial-track::-moz-range-thumb {
+  width: 12px;
+  height: 34px;
+  border-radius: 0;
+  background: var(--color-ink);
+  border: 1px solid var(--color-ink);
+  box-shadow: inset 0 0 0 2px var(--color-sheet-panel);
+  cursor: grab;
+}
+
+.dial-track::-moz-range-track {
+  height: 28px;
+  background: var(--color-sheet-sunk);
+  border: 1px solid var(--color-rule);
+}
+
+.dial-track:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Motion. Every animation is a load being applied and settling. */
+@keyframes load-settle {
+  0% {
+    transform: translateY(-4px);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(1px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes tick-in {
+  0% {
+    transform: scaleY(0.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes hairline-draw {
+  from {
+    stroke-dashoffset: var(--draw-length, 1000);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(200%);
+  }
+}
+
+.animate-settle {
+  animation: load-settle 320ms cubic-bezier(0.22, 1.2, 0.36, 1) both;
+}
+
+.animate-tick {
+  animation: tick-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: bottom;
+}
+
+.animate-draw {
+  stroke-dasharray: var(--draw-length, 1000);
+  animation: hairline-draw 900ms cubic-bezier(0.33, 1, 0.68, 1) both;
+}
+
+.animate-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(29, 78, 216, 0.12),
+    transparent
+  );
+  animation: sweep 1.4s linear infinite;
+}
+
+/* Motion that is decoration only is removed outright, not merely shortened. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-sweep::after {
+    display: none;
+  }
+
+  .animate-draw {
+    stroke-dasharray: none;
+    animation: none;
+  }
+}
