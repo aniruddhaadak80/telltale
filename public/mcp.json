@@ -7,7 +7,7 @@
   "mcpServers": {
     "telltale": {
       "type": "http",
-      "url": "https://telltale-aniruddha-adaks-projects.vercel.app/api/mcp",
+      "url": "https://telltale-eight.vercel.app/api/mcp",
       "transport": "streamable-http",
       "protocolVersion": "2025-06-18",
       "capabilities": {

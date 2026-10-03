@@ -11,7 +11,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { execFileSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -35,8 +35,19 @@ function sh(command, args, options = {}) {
   return result;
 }
 
+/**
+ * Capture a command's output. Vercel's CLI writes its tables and progress
+ * lines to stderr, so both streams are combined before callers match against
+ * them; a non-zero exit throws with that output attached.
+ */
 function capture(command, args) {
-  return execFileSync(command, args, { encoding: "utf8", shell: process.platform === "win32" });
+  const result = spawnSync(command, args, { encoding: "utf8", shell: process.platform === "win32" });
+  if (result.error) throw result.error;
+  const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+  if (result.status !== 0) {
+    throw new Error(`Command failed: ${command} ${args.join(" ")}\n${output}`);
+  }
+  return output;
 }
 
 /** Replace a value only where the placeholder is still present. */
@@ -59,28 +70,42 @@ function substitute(path, replacements) {
 
 const PLACEHOLDER = "<your-alias>";
 
+// Vercel's CLI paints even captured output, so strip SGR codes before matching.
+const stripAnsi = (text) => text.replace(/\x1b\[[0-9;]*m/g, "");
+
 // 1. Work out the alias. Given on the command line, otherwise read from Vercel.
 let url = value("url");
 
 if (!url) {
   if (!flag("no-deploy")) {
     console.log("Deploying to Vercel production…");
+    let deployed = "";
     try {
-      sh("vercel", ["--prod", "--yes"]);
-    } catch {
+      deployed = stripAnsi(capture("vercel", ["--prod", "--yes"]));
+      process.stdout.write(deployed);
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
       console.error("\nThe deploy did not complete. Nothing has been claimed.");
       process.exit(1);
     }
+    const aliased = deployed.match(/Aliased\s+(https:\/\/\S+)/);
+    if (aliased) url = aliased[1].replace(/\/$/, "");
   }
 
-  console.log("Discovering the production alias from Vercel…");
-  const listed = capture("vercel", ["inspect", "--yes"]);
-  const match = listed.match(/https:\/\/[^\s]+\.vercel\.app/) ?? listed.match(/Production:\s*(https:\/\/\S+)/);
-  if (!match) {
+  if (!url) {
+    console.log("Discovering the production alias from Vercel…");
+    // `vercel inspect` takes no --yes in CLI 59, so read the project's
+    // production domain off the project listing instead.
+    const listed = stripAnsi(capture("vercel", ["project", "ls"]));
+    const project = REPO.split("/")[1];
+    const match = listed.match(new RegExp(`^\\s*${project}\\s+(https:\\/\\/\\S+)`, "m"));
+    if (match) url = match[1].replace(/\/$/, "");
+  }
+
+  if (!url) {
     console.error("Could not discover the production alias. Pass it explicitly with --url.");
     process.exit(1);
   }
-  url = match[0].replace(/\/$/, "");
 }
 
 url = url.replace(/\/+$/, "");
@@ -92,16 +117,23 @@ if (!url.startsWith("https://")) {
 console.log(`\nProduction alias: ${url}`);
 
 // 2. Prove it answers before writing it anywhere.
+// In-process fetch: a `node -e` child would have to survive cmd.exe quoting.
 console.log("\nChecking the alias responds…");
-const probe = capture("node", ["-e", `
-  const u = process.argv[1];
-  fetch(u + "/api/health").then(async (r) => {
-    const body = await r.json();
-    console.log(JSON.stringify({ status: r.status, ok: body.ok, adapter: body.store && body.store.adapter }));
-    process.exit(r.status === 200 ? 0 : 1);
-  }).catch((e) => { console.error(String(e)); process.exit(1); });
-`, url]);
-console.log(`  ${probe.trim()}`);
+try {
+  const response = await fetch(`${url}/api/health`);
+  const body = await response.json();
+  console.log(
+    `  ${JSON.stringify({ status: response.status, ok: body.ok, adapter: body.store && body.store.adapter })}`,
+  );
+  if (response.status !== 200 || body.ok !== true) {
+    console.error("The alias answered, but health is not ok. Nothing has been claimed.");
+    process.exit(1);
+  }
+} catch (error) {
+  console.error(String(error));
+  console.error("The alias did not answer. Nothing has been claimed.");
+  process.exit(1);
+}
 
 // 3. Propagate the verified alias everywhere it appears.
 console.log("\nPropagating the alias…");

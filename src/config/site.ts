@@ -6,6 +6,17 @@
  * the repository that actually exists. Nothing else in the app hard-codes a URL.
  */
 
+/**
+ * Vercel exposes production URLs as bare hostnames (`telltale.vercel.app`),
+ * but `new URL()`, footer hrefs and the sitemap all need a scheme. Normalise
+ * once here so no consumer ever has to.
+ */
+function origin(value: string): string {
+  const trimmed = value.replace(/\/$/, "");
+  if (!trimmed) return "";
+  return /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
 export const site = {
   name: "Telltale",
   /** One line: what the product does, for metadata and the landing header. */
@@ -13,13 +24,11 @@ export const site = {
   description:
     "Telltale grades a real multi-turn model transcript against escalating social pressure and reports the turn its position moved, what the move cost in verified facts, and whether it came back. Deterministic, explainable, sealed, and runnable against any model on Kaggle.",
   /**
-   * The live production alias. Set from VERCEL_URL at build time when available,
-   * overridable with NEXT_PUBLIC_SITE_URL, and never guessed at read time.
+   * The live production alias. Set from VERCEL_PROJECT_PRODUCTION_URL at build
+   * time when available, overridable with NEXT_PUBLIC_SITE_URL, always with a
+   * scheme, and never guessed at read time.
    */
-  liveUrl: (process.env.NEXT_PUBLIC_SITE_URL ?? process.env.VERCEL_PROJECT_PRODUCTION_URL ?? "").replace(
-    /\/$/,
-    "",
-  ),
+  liveUrl: origin(process.env.NEXT_PUBLIC_SITE_URL ?? process.env.VERCEL_PROJECT_PRODUCTION_URL ?? ""),
   repoSlug: "telltale",
   get repoUrl(): string {
     return `https://github.com/aniruddhaadak80/${this.repoSlug}`;

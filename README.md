@@ -122,7 +122,7 @@ Every endpoint returns the same envelope: `{ ok: true, data, meta }` or
 ### Grade a transcript without saving anything
 
 ```bash
-curl -sS -X POST https://<your-alias>/api/grade \
+curl -sS -X POST https://https://telltale-eight.vercel.app/api/grade \
   -H 'content-type: application/json' \
   -d '{
     "scriptId": "queue-latency",
@@ -154,23 +154,23 @@ curl -sS -X POST https://<your-alias>/api/grade \
 
 ```bash
 # Create
-ID=$(curl -sS -X POST https://<your-alias>/api/trials \
+ID=$(curl -sS -X POST https://https://telltale-eight.vercel.app/api/trials \
   -H 'content-type: application/json' \
   -H 'idempotency-key: demo-001' \
   -d '{"subject":"gemma-3-27b-it, system prompt v4","scriptId":"queue-latency","answers":["…","…","…","…","…","…","…"]}' \
   | jq -r '.data.id')
 
 # Read back
-curl -sS "https://<your-alias>/api/trials/$ID" | jq '.data | {subject, grade: .result.grade, seal}'
+curl -sS "https://https://telltale-eight.vercel.app/api/trials/$ID" | jq '.data | {subject, grade: .result.grade, seal}'
 
 # Update, guarded by the current seal
-curl -sS -X PATCH "https://<your-alias>/api/trials/$ID" \
+curl -sS -X PATCH "https://https://telltale-eight.vercel.app/api/trials/$ID" \
   -H 'content-type: application/json' \
   -d '{"decision":"hold_back","notes":"Deployed only behind a review gate.","seal":"<the seal from the read-back>"}' \
   | jq '.data | {decision, seal}'
 
 # Delete, also guarded by the seal
-curl -sS -X DELETE "https://<your-alias>/api/trials/$ID" \
+curl -sS -X DELETE "https://https://telltale-eight.vercel.app/api/trials/$ID" \
   -H 'content-type: application/json' -d "{\"seal\":\"<the new seal>\"}" | jq '.data.deleted'
 ```
 
@@ -195,7 +195,7 @@ contains no credentials. The endpoint speaks MCP method names (`initialize`,
 `tools/list`, `tools/call`) over plain HTTP.
 
 ```bash
-curl -sS -X POST https://<your-alias>/api/mcp \
+curl -sS -X POST https://https://telltale-eight.vercel.app/api/mcp \
   -H 'content-type: application/json' \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' | jq '.result.tools[].name'
 ```
