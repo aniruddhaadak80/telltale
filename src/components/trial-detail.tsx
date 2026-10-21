@@ -115,8 +115,12 @@ export function TrialDetail({ initial }: { initial: Trial }) {
         setError(payload.error?.message ?? `deletion failed with status ${response.status}`);
         return;
       }
+      // The tombstone is the last write to this record, so this panel is the
+      // only surface that still offers the chain to verify. Refreshing here
+      // would re-read the trial, which now reports 410 and renders the not-found
+      // page, so the confirmation and its verification link would be replaced by
+      // a dead end a moment after they appeared.
       setDeleted(true);
-      router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "the delete request failed");
     } finally {
