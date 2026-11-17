@@ -26,7 +26,7 @@
     "@playwright/test": "^1.63.0",
     "framer-motion": "^14.0.0",
     "lucide-react": "^1.50.0",
-    "next": "16.3.8",
+    "next": "16.4.5",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "vitest": "^5.0.3"
